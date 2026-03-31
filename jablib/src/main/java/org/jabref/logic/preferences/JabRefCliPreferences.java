@@ -52,6 +52,8 @@ import org.jabref.logic.exporter.ExportPreferences;
 import org.jabref.logic.exporter.MetaDataSerializer;
 import org.jabref.logic.exporter.SelfContainedSaveConfiguration;
 import org.jabref.logic.exporter.TemplateExporter;
+import org.jabref.logic.externalfiles.GlobalLinkedFilePatterns;
+import org.jabref.logic.externalfiles.LinkedFilePatternPreferences;
 import org.jabref.logic.git.preferences.GitPreferences;
 import org.jabref.logic.importer.ImportException;
 import org.jabref.logic.importer.ImportFormatPreferences;
@@ -295,6 +297,8 @@ public class JabRefCliPreferences implements CliPreferences {
     public static final String OO_ADD_SPACE_AFTER = "ooAddSpaceAfter";
     // Prefs node for CitationKeyPatterns
     public static final String CITATION_KEY_PATTERNS_NODE = "bibtexkeypatterns";
+    // Prefs node for linked-file name patterns
+    public static final String LINKED_FILE_NAME_PATTERNS_NODE = "linkedfilenamepatterns";
     // Prefs node for customized entry types
     public static final String CUSTOMIZED_BIBTEX_TYPES = "customizedBibtexTypes";
     public static final String CUSTOMIZED_BIBLATEX_TYPES = "customizedBiblatexTypes";
@@ -1463,6 +1467,23 @@ public class JabRefCliPreferences implements CliPreferences {
 
         return citationKeyPattern;
     }
+
+    private GlobalLinkedFilePatterns getGlobalLinkedFileNamePattern() {
+        GlobalLinkedFilePatterns linkedFileNamePatterns = GlobalLinkedFilePatterns.fromPattern(get(IMPORT_FILENAMEPATTERN));
+        Preferences preferences = PREFS_NODE.node(LINKED_FILE_NAME_PATTERNS_NODE);
+        try {
+            String[] keys = preferences.keys();
+            for (String key : keys) {
+                linkedFileNamePatterns.addCitationKeyPattern(
+                        EntryTypeFactory.parse(key),
+                        preferences.get(key, null));
+            }
+        } catch (BackingStoreException ex) {
+            LOGGER.info("BackingStoreException in JabRefPreferences.getGlobalLinkedFileNamePattern", ex);
+        }
+
+        return linkedFileNamePatterns;
+    }
     // endregion
 
     // public for use in PreferenceMigrations
@@ -1485,6 +1506,28 @@ public class JabRefCliPreferences implements CliPreferences {
         for (EntryType entryType : pattern.getAllKeys()) {
             if (!pattern.isDefaultValue(entryType)) {
                 // first entry in the map is the full pattern
+                preferences.put(entryType.getName(), pattern.getValue(entryType).stringRepresentation());
+            }
+        }
+    }
+
+    public void storeGlobalLinkedFileNamePattern(GlobalLinkedFilePatterns pattern) {
+        if ((pattern.getDefaultValue() == null)
+                || pattern.getDefaultValue().equals(CitationKeyPattern.NULL_CITATION_KEY_PATTERN)) {
+            put(IMPORT_FILENAMEPATTERN, "");
+        } else {
+            put(IMPORT_FILENAMEPATTERN, pattern.getDefaultValue().stringRepresentation());
+        }
+
+        Preferences preferences = PREFS_NODE.node(LINKED_FILE_NAME_PATTERNS_NODE);
+        try {
+            preferences.clear();
+        } catch (BackingStoreException ex) {
+            LOGGER.info("BackingStoreException in JabRefPreferences::storeGlobalLinkedFileNamePattern", ex);
+        }
+
+        for (EntryType entryType : pattern.getAllKeys()) {
+            if (!pattern.isDefaultValue(entryType)) {
                 preferences.put(entryType.getName(), pattern.getValue(entryType).stringRepresentation());
             }
         }
@@ -1659,6 +1702,7 @@ public class JabRefCliPreferences implements CliPreferences {
                 getBoolean(STORE_RELATIVE_TO_BIB),
                 getBoolean(AUTO_RENAME_FILES_ON_CHANGE),
                 get(IMPORT_FILENAMEPATTERN),
+            new LinkedFilePatternPreferences(getGlobalLinkedFileNamePattern(), (String) defaults.get(IMPORT_FILENAMEPATTERN)),
                 get(IMPORT_FILEDIRPATTERN),
                 getBoolean(DOWNLOAD_LINKED_FILES),
                 getBoolean(FULLTEXT_INDEX_LINKED_FILES),
@@ -1682,6 +1726,7 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(filePreferences.storeFilesRelativeToBibFileProperty(), (_, _, newValue) -> putBoolean(STORE_RELATIVE_TO_BIB, newValue));
         EasyBind.listen(filePreferences.autoRenameFilesOnChangeProperty(), (_, _, newValue) -> putBoolean(AUTO_RENAME_FILES_ON_CHANGE, newValue));
         EasyBind.listen(filePreferences.fileNamePatternProperty(), (_, _, newValue) -> put(IMPORT_FILENAMEPATTERN, newValue));
+        EasyBind.listen(filePreferences.fileNamePatternsProperty(), (_, _, newValue) -> storeGlobalLinkedFileNamePattern(newValue));
         EasyBind.listen(filePreferences.fileDirectoryPatternProperty(), (_, _, newValue) -> put(IMPORT_FILEDIRPATTERN, newValue));
         EasyBind.listen(filePreferences.downloadLinkedFilesProperty(), (_, _, newValue) -> putBoolean(DOWNLOAD_LINKED_FILES, newValue));
         EasyBind.listen(filePreferences.fulltextIndexLinkedFilesProperty(), (_, _, newValue) -> putBoolean(FULLTEXT_INDEX_LINKED_FILES, newValue));

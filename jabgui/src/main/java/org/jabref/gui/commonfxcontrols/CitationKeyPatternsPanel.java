@@ -107,6 +107,10 @@ public class CitationKeyPatternsPanel extends TableView<CitationKeyPatternsPanel
         return viewModel.defaultKeyPatternProperty();
     }
 
+    public void setDefaultPattern(String defaultPattern) {
+        viewModel.setDefaultPattern(defaultPattern);
+    }
+
     private void jumpToSearchKey(KeyEvent keypressed) {
         if (keypressed.getCharacter() == null) {
             return;

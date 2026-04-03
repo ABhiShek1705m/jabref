@@ -241,7 +241,7 @@ public class LinkedFileHandler {
     /// @return the suggested filename, including extension
     public String getSuggestedFileName() {
         String filename = linkedFile.getFileName().orElse("file");
-        final String targetFileName = FileUtil.createFileNameFromPattern(databaseContext.getDatabase(), entry, filePreferences.getFileNamePattern())
+        final String targetFileName = FileUtil.createFileNameFromPattern(databaseContext.getDatabase(), entry, filePreferences.getFileNamePatternForEntryType(entry.getType()))
                                               .orElse(FileUtil.getBaseName(filename));
 
         return FileUtil.getValidFileName(FileUtil.getFileExtension(filename).map(ext -> targetFileName + "." + ext).orElse(targetFileName));
@@ -255,7 +255,7 @@ public class LinkedFileHandler {
     public String getSuggestedFileName(@NonNull String extension) {
         assert !StringUtil.isBlank(extension);
         String filename = linkedFile.getFileName().orElse("file");
-        final String targetFileName = FileUtil.createFileNameFromPattern(databaseContext.getDatabase(), entry, filePreferences.getFileNamePattern())
+        final String targetFileName = FileUtil.createFileNameFromPattern(databaseContext.getDatabase(), entry, filePreferences.getFileNamePatternForEntryType(entry.getType()))
                                               .orElse(FileUtil.getBaseName(filename));
 
         return FileUtil.getValidFileName(targetFileName + "." + extension);

@@ -4,6 +4,7 @@ import org.jabref.logic.citationkeypattern.AbstractCitationKeyPatterns;
 import org.jabref.logic.citationkeypattern.CitationKeyPattern;
 import org.jabref.model.entry.types.EntryType;
 
+// Linked file pattern container class, re-use the same structure as the citation key patterns.  
 public class GlobalLinkedFilePatterns extends AbstractCitationKeyPatterns {
 
     public GlobalLinkedFilePatterns(CitationKeyPattern defaultPattern) {

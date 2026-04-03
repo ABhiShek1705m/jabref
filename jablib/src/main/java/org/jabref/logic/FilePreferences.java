@@ -28,6 +28,7 @@ public class FilePreferences {
     private final StringProperty fileDirectoryPattern = new SimpleStringProperty();
     private final BooleanProperty downloadLinkedFiles = new SimpleBooleanProperty();
     private final BooleanProperty fulltextIndexLinkedFiles = new SimpleBooleanProperty();
+    // The linked file pattern preferences used to store the global file name patterns
     private final LinkedFilePatternPreferences linkedFilePatternPreferences;
     private final ObjectProperty<Path> workingDirectory = new SimpleObjectProperty<>();
     private final BooleanProperty createBackup = new SimpleBooleanProperty();
@@ -135,7 +136,7 @@ public class FilePreferences {
     public void setAutoRenameFilesOnChange(boolean autoRenameFilesOnChange) {
         this.autoRenameFilesOnChange.set(autoRenameFilesOnChange);
     }
-
+    // Start region - Methods for handling file name patterns
     public String getFileNamePattern() {
         return fileNamePattern.get();
     }
@@ -165,11 +166,12 @@ public class FilePreferences {
     }
 
     public String getFileNamePatternForEntryType(EntryType entryType) {
+        // First check the entry-table patterns
         GlobalLinkedFilePatterns fileNamePatterns = getFileNamePatterns();
         if ((fileNamePatterns == null) || (fileNamePatterns.getValue(entryType) == null)) {
             return getFileNamePattern();
         }
-
+        // Fall back to the default if no pattern exist for the entry type
         String pattern = fileNamePatterns.getValue(entryType).stringRepresentation();
         if (StringUtil.isBlank(pattern)) {
             return getFileNamePattern();
@@ -177,6 +179,7 @@ public class FilePreferences {
 
         return pattern;
     }
+    // end region
 
     public String getFileDirectoryPattern() {
         return fileDirectoryPattern.get();

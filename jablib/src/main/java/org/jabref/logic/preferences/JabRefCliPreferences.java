@@ -482,7 +482,6 @@ public class JabRefCliPreferences implements CliPreferences {
     private LastFilesOpenedPreferences lastFilesOpenedPreferences;
     private PushToApplicationPreferences pushToApplicationPreferences;
     private GitPreferences gitPreferences;
-    private LinkedFilePatternPreferences LinkedFilePatternPreferences;
 
     /// @implNote The constructor was made public because dependency injection via constructor
     /// required widespread refactoring, currently we are using reflection in some formatters
@@ -1670,6 +1669,7 @@ public class JabRefCliPreferences implements CliPreferences {
                 getBoolean(STORE_RELATIVE_TO_BIB),
                 getBoolean(AUTO_RENAME_FILES_ON_CHANGE),
                 get(IMPORT_FILENAMEPATTERN),
+                // Set the global pattern as the default in case no specific pattern is set for an entry type.
                 new LinkedFilePatternPreferences(getGlobalLinkedFileNamePattern(), (String) defaults.get(IMPORT_FILENAMEPATTERN)),
                 get(IMPORT_FILEDIRPATTERN),
                 getBoolean(DOWNLOAD_LINKED_FILES),

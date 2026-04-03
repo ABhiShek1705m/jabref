@@ -78,7 +78,7 @@ public class CitationKeyPatternsPanelViewModel {
         patternListProperty.forEach(item -> item.setPattern(""));
         defaultItemProperty.getValue().setPattern(getDefaultPattern());
     }
-
+    // Update the default pattern in the table when a user changes it in the text field.
     public void setDefaultPattern(String defaultPattern) {
         defaultPatternProperty.set(defaultPattern);
     }

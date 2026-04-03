@@ -4,21 +4,28 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 
+import org.jabref.gui.commonfxcontrols.CitationKeyPatternsPanelItemModel;
+import org.jabref.gui.commonfxcontrols.CitationKeyPatternsPanelViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.preferences.PreferenceTabViewModel;
 import org.jabref.gui.util.DirectoryDialogConfiguration;
+import org.jabref.logic.externalfiles.GlobalLinkedFilePatterns;
+import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.preferences.CliPreferences;
 import org.jabref.logic.util.io.AutoLinkPreferences;
+import org.jabref.logic.util.strings.StringUtil;
 
 import de.saxsys.mvvmfx.utils.validation.FunctionBasedValidator;
 import de.saxsys.mvvmfx.utils.validation.ValidationMessage;
@@ -40,6 +47,9 @@ public class LinkedFilesTabViewModel implements PreferenceTabViewModel {
     private final BooleanProperty autoRenameFilesOnChangeProperty = new SimpleBooleanProperty();
     private final StringProperty fileNamePatternProperty = new SimpleStringProperty();
     private final StringProperty fileDirectoryPatternProperty = new SimpleStringProperty();
+    private final ListProperty<CitationKeyPatternsPanelItemModel> patternListProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ObjectProperty<CitationKeyPatternsPanelItemModel> defaultKeyPatternProperty = new SimpleObjectProperty<>(
+            new CitationKeyPatternsPanelItemModel(new CitationKeyPatternsPanelViewModel.DefaultEntryType(), ""));
     private final BooleanProperty confirmLinkedFileDeleteProperty = new SimpleBooleanProperty();
     private final BooleanProperty moveToTrashProperty = new SimpleBooleanProperty();
 
@@ -114,11 +124,31 @@ public class LinkedFilesTabViewModel implements PreferenceTabViewModel {
 
     @Override
     public void storeSettings() {
+
+        GlobalLinkedFilePatterns newPatterns = new GlobalLinkedFilePatterns(filePreferences.getFileNamePatterns().getDefaultValue());
+        patternListProperty.forEach(item -> {
+            if (!CitationKeyPatternsPanelViewModel.ENTRY_TYPE_DEFAULT_NAME.equals(item.getEntryType().getName())
+                    && StringUtil.isNotBlank(item.getPattern())) {
+                newPatterns.addCitationKeyPattern(item.getEntryType(), item.getPattern());
+            }
+        });
+
+        String defaultPattern = defaultKeyPatternProperty.getValue().getPattern();
+        if (StringUtil.isBlank(defaultPattern)) {
+            defaultPattern = fileNamePatternProperty.getValue();
+        }
+        if (StringUtil.isBlank(defaultPattern)) {
+            defaultPattern = filePreferences.getLinkedFilePatternPreferences().getDefaultPattern();
+        }
+        newPatterns.setDefaultValue(defaultPattern);
+
         // External files preferences / Attached files preferences / File preferences
         filePreferences.setMainFileDirectory(mainFileDirectoryProperty.getValue());
         filePreferences.setStoreFilesRelativeToBibFile(useBibLocationAsPrimaryProperty.getValue());
         filePreferences.setAutoRenameFilesOnChange(autoRenameFilesOnChangeProperty.getValue());
         filePreferences.setFileNamePattern(fileNamePatternProperty.getValue());
+        filePreferences.setFileNamePattern(defaultPattern);
+        filePreferences.setFileNamePatterns(newPatterns);
         filePreferences.setFileDirectoryPattern(fileDirectoryPatternProperty.getValue());
         filePreferences.setFulltextIndexLinkedFiles(fulltextIndex.getValue());
         filePreferences.setOpenFileExplorerInFileDirectory(openFileExplorerInFilesDirectory.getValue());
@@ -202,6 +232,22 @@ public class LinkedFilesTabViewModel implements PreferenceTabViewModel {
 
     public StringProperty fileNamePatternProperty() {
         return fileNamePatternProperty;
+    }
+
+    public ListProperty<CitationKeyPatternsPanelItemModel> patternListProperty() {
+        return patternListProperty;
+    }
+
+    public ObjectProperty<CitationKeyPatternsPanelItemModel> defaultKeyPatternProperty() {
+        return defaultKeyPatternProperty;
+    }
+
+    public GlobalLinkedFilePatterns getFileNamePatterns() {
+        return filePreferences.getFileNamePatterns();
+    }
+
+    public String getDefaultFileNamePattern() {
+        return filePreferences.getLinkedFilePatternPreferences().getDefaultPattern();
     }
 
     public StringProperty fileDirectoryPatternProperty() {

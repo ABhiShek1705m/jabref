@@ -482,6 +482,7 @@ public class JabRefCliPreferences implements CliPreferences {
     private LastFilesOpenedPreferences lastFilesOpenedPreferences;
     private PushToApplicationPreferences pushToApplicationPreferences;
     private GitPreferences gitPreferences;
+    private LinkedFilePatternPreferences LinkedFilePatternPreferences;
 
     /// @implNote The constructor was made public because dependency injection via constructor
     /// required widespread refactoring, currently we are using reflection in some formatters
@@ -1669,6 +1670,7 @@ public class JabRefCliPreferences implements CliPreferences {
                 getBoolean(STORE_RELATIVE_TO_BIB),
                 getBoolean(AUTO_RENAME_FILES_ON_CHANGE),
                 get(IMPORT_FILENAMEPATTERN),
+                new LinkedFilePatternPreferences(getGlobalLinkedFileNamePattern(), (String) defaults.get(IMPORT_FILENAMEPATTERN)),
                 get(IMPORT_FILEDIRPATTERN),
                 getBoolean(DOWNLOAD_LINKED_FILES),
                 getBoolean(FULLTEXT_INDEX_LINKED_FILES),
@@ -1692,6 +1694,7 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(filePreferences.storeFilesRelativeToBibFileProperty(), (_, _, newValue) -> putBoolean(STORE_RELATIVE_TO_BIB, newValue));
         EasyBind.listen(filePreferences.autoRenameFilesOnChangeProperty(), (_, _, newValue) -> putBoolean(AUTO_RENAME_FILES_ON_CHANGE, newValue));
         EasyBind.listen(filePreferences.fileNamePatternProperty(), (_, _, newValue) -> put(IMPORT_FILENAMEPATTERN, newValue));
+        EasyBind.listen(filePreferences.fileNamePatternsProperty(), (_, _, newValue) -> storeGlobalLinkedFileNamePattern(newValue));
         EasyBind.listen(filePreferences.fileDirectoryPatternProperty(), (_, _, newValue) -> put(IMPORT_FILEDIRPATTERN, newValue));
         EasyBind.listen(filePreferences.downloadLinkedFilesProperty(), (_, _, newValue) -> putBoolean(DOWNLOAD_LINKED_FILES, newValue));
         EasyBind.listen(filePreferences.fulltextIndexLinkedFilesProperty(), (_, _, newValue) -> putBoolean(FULLTEXT_INDEX_LINKED_FILES, newValue));
@@ -1702,7 +1705,6 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(filePreferences.moveToTrashProperty(), (_, _, newValue) -> putBoolean(TRASH_INSTEAD_OF_DELETE, newValue));
         EasyBind.listen(filePreferences.adjustFileLinksOnTransferProperty(), (_, _, newValue) -> putBoolean(ADJUST_FILE_LINKS_ON_TRANSFER, newValue));
         EasyBind.listen(filePreferences.copyLinkedFilesOnTransferProperty(), (_, _, newValue) -> putBoolean(COPY_LINKED_FILES_ON_TRANSFER, newValue));
-        EasyBind.listen(filePreferences.moveLinkedFilesOnTransferPropertyProperty(), (_, _, newValue) -> putBoolean(MOVE_LINKED_FILES_ON_TRANSFER, newValue));
         EasyBind.listen(filePreferences.moveLinkedFilesOnTransferPropertyProperty(), (_, _, newValue) -> putBoolean(MOVE_LINKED_FILES_ON_TRANSFER, newValue));
         EasyBind.listen(filePreferences.shouldKeepDownloadUrlProperty(), (_, _, newValue) -> putBoolean(KEEP_DOWNLOAD_URL, newValue));
         EasyBind.listen(filePreferences.lastUsedDirectoryProperty(), (_, _, newValue) -> put(LAST_USED_DIRECTORY, newValue.toString()));

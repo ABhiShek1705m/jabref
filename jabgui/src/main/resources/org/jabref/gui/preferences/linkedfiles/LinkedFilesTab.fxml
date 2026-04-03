@@ -71,23 +71,6 @@
 
     <Label styleClass="sectionHeader" text="%Linked file name conventions"/>
     <CheckBox fx:id="autoRenameFilesOnChange" text="%Auto rename files if entry changes"/>
-    <GridPane hgap="4.0" vgap="4.0">
-        <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="30.0"/>
-            <ColumnConstraints hgrow="SOMETIMES"/>
-        </columnConstraints>
-        <rowConstraints>
-            <RowConstraints vgrow="SOMETIMES"/>
-            <RowConstraints vgrow="SOMETIMES"/>
-        </rowConstraints>
-        <Label text="%Filename format pattern"/>
-        <ComboBox fx:id="fileNamePattern" promptText="%Choose pattern" GridPane.columnIndex="1" editable="true"
-                  prefWidth="300" minWidth="300" maxWidth="300"/>
-
-        <Label text="%File directory pattern" GridPane.rowIndex="1"/>
-        <TextField fx:id="fileDirectoryPattern" GridPane.columnIndex="1" GridPane.rowIndex="1"
-                   prefWidth="300" minWidth="300" maxWidth="300"/>
-    </GridPane>
 
     <Label text="%Filename format pattern"/>
     <Label text="%( Note: Press return to commit changes in the table! )"/>
@@ -97,6 +80,20 @@
         <Button text="%Reset All" onAction="#resetAllFileNamePatterns"
                 AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
     </AnchorPane>
+
+    <GridPane hgap="4.0" vgap="4.0">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" percentWidth="30.0"/>
+            <ColumnConstraints hgrow="SOMETIMES"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints vgrow="SOMETIMES"/>
+            <RowConstraints vgrow="SOMETIMES"/>
+        </rowConstraints>
+        <Label text="%File directory pattern" GridPane.rowIndex="1"/>
+        <TextField fx:id="fileDirectoryPattern" GridPane.columnIndex="1" GridPane.rowIndex="1"
+                   prefWidth="300" minWidth="300" maxWidth="300"/>
+    </GridPane>
 
     <Label styleClass="sectionHeader" text="%Attached files"/>
     <CheckBox fx:id="confirmLinkedFileDelete" text="%Show confirmation dialog when deleting attached files"/>

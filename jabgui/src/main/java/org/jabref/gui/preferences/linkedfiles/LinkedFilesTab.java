@@ -43,7 +43,6 @@ public class LinkedFilesTab extends AbstractPreferenceTabView<LinkedFilesTabView
     @FXML private CheckBox fulltextIndex;
     @FXML private CheckBox autoRenameFilesOnChange;
 
-    @FXML private ComboBox<String> fileNamePattern;
     @FXML private CitationKeyPatternsPanel fileNamePatternTable;
     @FXML private TextField fileDirectoryPattern;
     @FXML private CheckBox confirmLinkedFileDelete;
@@ -84,8 +83,6 @@ public class LinkedFilesTab extends AbstractPreferenceTabView<LinkedFilesTabView
         autolinkRegexKey.disableProperty().bind(autolinkUseRegex.selectedProperty().not());
         fulltextIndex.selectedProperty().bindBidirectional(viewModel.fulltextIndexProperty());
         autoRenameFilesOnChange.selectedProperty().bindBidirectional(viewModel.autoRenameFilesOnChangeProperty());
-        fileNamePattern.valueProperty().bindBidirectional(viewModel.fileNamePatternProperty());
-        fileNamePattern.itemsProperty().bind(viewModel.defaultFileNamePatternsProperty());
         fileNamePatternTable.patternListProperty().bindBidirectional(viewModel.patternListProperty());
         fileNamePatternTable.defaultKeyPatternProperty().bindBidirectional(viewModel.defaultKeyPatternProperty());
         fileDirectoryPattern.textProperty().bindBidirectional(viewModel.fileDirectoryPatternProperty());

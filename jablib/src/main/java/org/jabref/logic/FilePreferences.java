@@ -10,7 +10,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import org.jabref.logic.externalfiles.GlobalLinkedFilePatterns;
+import org.jabref.logic.externalfiles.LinkedFilePatternPreferences;
 import org.jabref.logic.util.strings.StringUtil;
+import org.jabref.model.entry.types.EntryType;
 
 /// Preferences for the linked files
 public class FilePreferences {
@@ -25,6 +28,8 @@ public class FilePreferences {
     private final StringProperty fileDirectoryPattern = new SimpleStringProperty();
     private final BooleanProperty downloadLinkedFiles = new SimpleBooleanProperty();
     private final BooleanProperty fulltextIndexLinkedFiles = new SimpleBooleanProperty();
+    // The linked file pattern preferences used to store the global file name patterns
+    private final LinkedFilePatternPreferences linkedFilePatternPreferences;
     private final ObjectProperty<Path> workingDirectory = new SimpleObjectProperty<>();
     private final BooleanProperty createBackup = new SimpleBooleanProperty();
     private final ObjectProperty<Path> backupDirectory = new SimpleObjectProperty<>();
@@ -45,6 +50,7 @@ public class FilePreferences {
                            boolean storeFilesRelativeToBibFile,
                            boolean autoRenameFilesOnChange,
                            String fileNamePattern,
+                           LinkedFilePatternPreferences linkedFilePatternPreferences,
                            String fileDirectoryPattern,
                            boolean downloadLinkedFiles,
                            boolean fulltextIndexLinkedFiles,
@@ -65,6 +71,7 @@ public class FilePreferences {
         this.storeFilesRelativeToBibFile.setValue(storeFilesRelativeToBibFile);
         this.autoRenameFilesOnChange.setValue(autoRenameFilesOnChange);
         this.fileNamePattern.setValue(fileNamePattern);
+        this.linkedFilePatternPreferences = linkedFilePatternPreferences;
         this.fileDirectoryPattern.setValue(fileDirectoryPattern);
         this.downloadLinkedFiles.setValue(downloadLinkedFiles);
         this.fulltextIndexLinkedFiles.setValue(fulltextIndexLinkedFiles);
@@ -129,7 +136,7 @@ public class FilePreferences {
     public void setAutoRenameFilesOnChange(boolean autoRenameFilesOnChange) {
         this.autoRenameFilesOnChange.set(autoRenameFilesOnChange);
     }
-
+    // Start region - Methods for handling file name patterns
     public String getFileNamePattern() {
         return fileNamePattern.get();
     }
@@ -141,6 +148,38 @@ public class FilePreferences {
     public void setFileNamePattern(String fileNamePattern) {
         this.fileNamePattern.set(fileNamePattern);
     }
+    
+    public GlobalLinkedFilePatterns getFileNamePatterns() {
+        return linkedFilePatternPreferences.getKeyPatterns();
+    }
+
+    public ObjectProperty<GlobalLinkedFilePatterns> fileNamePatternsProperty() {
+        return linkedFilePatternPreferences.keyPatternsProperty();
+    }
+
+    public void setFileNamePatterns(GlobalLinkedFilePatterns fileNamePatterns) {
+        linkedFilePatternPreferences.setKeyPatterns(fileNamePatterns);
+    }
+
+    public LinkedFilePatternPreferences getLinkedFilePatternPreferences() {
+        return linkedFilePatternPreferences;
+    }
+
+    public String getFileNamePatternForEntryType(EntryType entryType) {
+        // First check the entry-table patterns
+        GlobalLinkedFilePatterns fileNamePatterns = getFileNamePatterns();
+        if ((fileNamePatterns == null) || (fileNamePatterns.getValue(entryType) == null)) {
+            return getFileNamePattern();
+        }
+        // Fall back to the default if no pattern exist for the entry type
+        String pattern = fileNamePatterns.getValue(entryType).stringRepresentation();
+        if (StringUtil.isBlank(pattern)) {
+            return getFileNamePattern();
+        }
+
+        return pattern;
+    }
+    // end region
 
     public String getFileDirectoryPattern() {
         return fileDirectoryPattern.get();

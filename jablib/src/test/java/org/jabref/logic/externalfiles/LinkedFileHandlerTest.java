@@ -10,6 +10,7 @@ import org.jabref.logic.preferences.CliPreferences;
 import org.jabref.logic.xmp.XmpPreferences;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.field.StandardField;
 import org.jabref.model.entry.LinkedFile;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +41,7 @@ class LinkedFileHandlerTest {
         databaseContext = new BibDatabaseContext();
 
         when(filePreferences.confirmDeleteLinkedFile()).thenReturn(true);
+        when(filePreferences.getFileNamePatternForEntryType(any())).thenReturn("[bibtexkey]");
         when(preferences.getFilePreferences()).thenReturn(filePreferences);
         when(preferences.getXmpPreferences()).thenReturn(mock(XmpPreferences.class));
     }
@@ -79,8 +82,6 @@ class LinkedFileHandlerTest {
                 asdf.pdf, path/to/file.pdf, pdf
             """)
     void getSuggestedFileName(String expectedFileName, String link, String extension) {
-        when(filePreferences.getFileNamePattern()).thenReturn("[bibtexkey]");
-
         final LinkedFile linkedFile = new LinkedFile("", link, "");
         final LinkedFileHandler linkedFileHandler = new LinkedFileHandler(linkedFile, entryWithCitationKeyAsdf, databaseContext, filePreferences);
 
@@ -112,8 +113,6 @@ class LinkedFileHandlerTest {
                 OAM-Webinar-V2.pdf, https://www.cncf.io/wp-content/uploads/2020/08/OAM-Webinar-V2.pdf, pdf
             """)
     void getSuggestedFileNameWithMissingKey(String expectedFileName, String link, String extension) {
-        when(filePreferences.getFileNamePattern()).thenReturn("[bibtexkey]");
-
         final LinkedFile linkedFile = new LinkedFile("", link, "");
         final LinkedFileHandler linkedFileHandler = new LinkedFileHandler(linkedFile, entryWithoutCitationKey, databaseContext, filePreferences);
 
@@ -133,8 +132,6 @@ class LinkedFileHandlerTest {
                 asdf.pdf, https://www.cncf.io/wp-content/uploads/2020/08/OAM-Webinar-V2.pdf
             """)
     void getSuggestedFileNameWithoutExtension(String expectedFileName, String link) {
-        when(filePreferences.getFileNamePattern()).thenReturn("[bibtexkey]");
-
         final LinkedFile linkedFile = new LinkedFile("", link, "");
         final LinkedFileHandler linkedFileHandler = new LinkedFileHandler(linkedFile, entryWithCitationKeyAsdf, databaseContext, filePreferences);
 
@@ -161,8 +158,6 @@ class LinkedFileHandlerTest {
                 OAM-Webinar-V2.pdf, https://www.cncf.io/wp-content/uploads/2020/08/OAM-Webinar-V2.pdf
             """)
     void getSuggestedFileNameWithoutExtensionWithMissingKey(String expectedFileName, String link) {
-        when(filePreferences.getFileNamePattern()).thenReturn("[bibtexkey]");
-
         final LinkedFile linkedFile = new LinkedFile("", link, "");
         final LinkedFileHandler linkedFileHandler = new LinkedFileHandler(linkedFile, entryWithoutCitationKey, databaseContext, filePreferences);
 
@@ -171,7 +166,6 @@ class LinkedFileHandlerTest {
 
     @Test
     void getSuggestedFileNameInDirectory() {
-        when(filePreferences.getFileNamePattern()).thenReturn("[bibtexkey]");
         final String link = "path/to/other.txt".replace('/', File.separatorChar);
         final LinkedFile linkedFile = new LinkedFile("", link, "");
         final LinkedFileHandler linkedFileHandler = new LinkedFileHandler(linkedFile, entryWithCitationKeyAsdf, databaseContext, filePreferences);
@@ -180,7 +174,6 @@ class LinkedFileHandlerTest {
 
     @Test
     void getSuggestedFileNameInDirectoryWithMissingKey() {
-        when(filePreferences.getFileNamePattern()).thenReturn("[bibtexkey]");
         final String link = "path/to/other.txt".replace('/', File.separatorChar);
         final LinkedFile linkedFile = new LinkedFile("", link, "");
         final LinkedFileHandler linkedFileHandler = new LinkedFileHandler(linkedFile, entryWithoutCitationKey, databaseContext, filePreferences);
@@ -189,7 +182,6 @@ class LinkedFileHandlerTest {
 
     @Test
     void getSuggestedFileNameWithoutExtensionInDirectory() {
-        when(filePreferences.getFileNamePattern()).thenReturn("[bibtexkey]");
         final String link = "path/to/other.txt".replace('/', File.separatorChar);
         final LinkedFile linkedFile = new LinkedFile("", link, "");
         final LinkedFileHandler linkedFileHandler = new LinkedFileHandler(linkedFile, entryWithCitationKeyAsdf, databaseContext, filePreferences);
@@ -198,10 +190,21 @@ class LinkedFileHandlerTest {
 
     @Test
     void getSuggestedFileNameWithoutExtensionWithMissingKeyInDirectory() {
-        when(filePreferences.getFileNamePattern()).thenReturn("[bibtexkey]");
         final String link = "path/to/other.txt".replace('/', File.separatorChar);
         final LinkedFile linkedFile = new LinkedFile("", link, "");
         final LinkedFileHandler linkedFileHandler = new LinkedFileHandler(linkedFile, entryWithoutCitationKey, databaseContext, filePreferences);
         assertEquals("other.txt", linkedFileHandler.getSuggestedFileName(), "\"" + link + "\" should be \"other.txt\" for empty citation key");
+    }
+
+    @Test
+    void getSuggestedFileNameUsesEntryTypeSpecificPattern() {
+        BibEntry thesisEntry = new BibEntry().withCitationKey("ignored");
+        thesisEntry.setField(StandardField.TITLE, "Thesis Title");
+        when(filePreferences.getFileNamePatternForEntryType(any())).thenReturn("[title]");
+
+        LinkedFile linkedFile = new LinkedFile("", "file.pdf", "");
+        LinkedFileHandler linkedFileHandler = new LinkedFileHandler(linkedFile, thesisEntry, databaseContext, filePreferences);
+
+        assertEquals("Thesis Title.pdf", linkedFileHandler.getSuggestedFileName("pdf"));
     }
 }

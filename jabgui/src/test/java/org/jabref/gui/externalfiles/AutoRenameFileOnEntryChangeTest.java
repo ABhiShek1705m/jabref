@@ -27,6 +27,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.jabref.logic.citationkeypattern.CitationKeyGenerator.DEFAULT_UNWANTED_CHARACTERS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +62,7 @@ class AutoRenameFileOnEntryChangeTest {
         when(guiPreferences.getFilePreferences()).thenReturn(filePreferences);
         when(filePreferences.shouldStoreFilesRelativeToBibFile()).thenReturn(true);
         when(filePreferences.getFileNamePattern()).thenReturn("[bibtexkey]");
+        when(filePreferences.getFileNamePatternForEntryType(any())).thenReturn("[bibtexkey]");
 
         entry = new BibEntry(StandardEntryType.Article).withCitationKey("oldKey2081")
                                                        .withField(StandardField.AUTHOR, "oldKey")
@@ -102,6 +104,7 @@ class AutoRenameFileOnEntryChangeTest {
         Files.createFile(tempDir.resolve("oldKey2081.pdf"));
         entry.setFiles(List.of(new LinkedFile("", "oldKey2081.pdf", "PDF")));
         when(filePreferences.getFileNamePattern()).thenReturn("");
+        when(filePreferences.getFileNamePatternForEntryType(any())).thenReturn("");
         when(filePreferences.shouldAutoRenameFilesOnChange()).thenReturn(true);
         entry.setField(StandardField.AUTHOR, "newKey");
 

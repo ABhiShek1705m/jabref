@@ -15,12 +15,16 @@ import org.jabref.gui.help.HelpAction;
 import org.jabref.gui.preferences.AbstractPreferenceTabView;
 import org.jabref.gui.preferences.PreferencesTab;
 import org.jabref.gui.util.IconValidationDecorator;
+import org.jabref.gui.commonfxcontrols.CitationKeyPatternsPanel;
 import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.model.entry.BibEntryTypesManager;
 
+import com.airhacks.afterburner.injection.Injector;
 import com.airhacks.afterburner.views.ViewLoader;
 import com.tobiasdiez.easybind.EasyBind;
 import de.saxsys.mvvmfx.utils.validation.visualization.ControlsFxVisualizer;
+
 
 public class LinkedFilesTab extends AbstractPreferenceTabView<LinkedFilesTabViewModel> implements PreferencesTab {
 
@@ -39,7 +43,7 @@ public class LinkedFilesTab extends AbstractPreferenceTabView<LinkedFilesTabView
     @FXML private CheckBox fulltextIndex;
     @FXML private CheckBox autoRenameFilesOnChange;
 
-    @FXML private ComboBox<String> fileNamePattern;
+    @FXML private CitationKeyPatternsPanel fileNamePatternTable;
     @FXML private TextField fileDirectoryPattern;
     @FXML private CheckBox confirmLinkedFileDelete;
     @FXML private CheckBox moveToTrash;
@@ -79,8 +83,8 @@ public class LinkedFilesTab extends AbstractPreferenceTabView<LinkedFilesTabView
         autolinkRegexKey.disableProperty().bind(autolinkUseRegex.selectedProperty().not());
         fulltextIndex.selectedProperty().bindBidirectional(viewModel.fulltextIndexProperty());
         autoRenameFilesOnChange.selectedProperty().bindBidirectional(viewModel.autoRenameFilesOnChangeProperty());
-        fileNamePattern.valueProperty().bindBidirectional(viewModel.fileNamePatternProperty());
-        fileNamePattern.itemsProperty().bind(viewModel.defaultFileNamePatternsProperty());
+        fileNamePatternTable.patternListProperty().bindBidirectional(viewModel.patternListProperty());
+        fileNamePatternTable.defaultKeyPatternProperty().bindBidirectional(viewModel.defaultKeyPatternProperty());
         fileDirectoryPattern.textProperty().bindBidirectional(viewModel.fileDirectoryPatternProperty());
         confirmLinkedFileDelete.selectedProperty().bindBidirectional(viewModel.confirmLinkedFileDeleteProperty());
         openFileExplorerInFilesDirectory.selectedProperty().bindBidirectional(viewModel.openFileExplorerInFilesDirectoryProperty());
@@ -100,6 +104,23 @@ public class LinkedFilesTab extends AbstractPreferenceTabView<LinkedFilesTabView
         validationVisualizer.setDecoration(new IconValidationDecorator());
         Platform.runLater(() -> validationVisualizer.initVisualization(viewModel.mainFileDirValidationStatus(), mainFileDirectory));
     }
+
+    @Override
+    public void setValues() {
+        super.setValues();
+
+        BibEntryTypesManager entryTypesManager = Injector.instantiateModelOrService(BibEntryTypesManager.class);
+        fileNamePatternTable.setDefaultPattern(viewModel.getDefaultFileNamePattern());
+        fileNamePatternTable.setValues(
+                entryTypesManager.getAllTypes(preferences.getLibraryPreferences().getDefaultBibDatabaseMode()),
+                viewModel.getFileNamePatterns());
+    }
+
+    @FXML
+    public void resetAllFileNamePatterns() {
+        fileNamePatternTable.resetAll();
+    }
+
 
     public void mainFileDirBrowse() {
         viewModel.mainFileDirBrowse();
